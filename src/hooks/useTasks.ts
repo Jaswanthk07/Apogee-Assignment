@@ -54,6 +54,15 @@ export function useTasks() {
   const syncWithServer = useCallback(async () => {
     if (!isOnline) return;
 
+    // Check if backend is available
+    const apiUrl = import.meta.env.VITE_API_URL;
+    const isBackendAvailable = apiUrl && apiUrl !== 'http://localhost:5000/api';
+    
+    if (!isBackendAvailable) {
+      console.warn('Backend not available, skipping sync');
+      return;
+    }
+
     try {
       const localTasks = await taskStorage.getAllTasks();
       const response = await tasksApi.syncTasks(localTasks);
@@ -70,7 +79,7 @@ export function useTasks() {
         toast.warning(`${response.conflicts.length} conflicts detected - using server version`);
       }
     } catch (err) {
-      console.error('Sync failed:', err);
+      console.error('Sync failed, using local storage:', err);
     }
   }, [isOnline]);
 
@@ -78,18 +87,29 @@ export function useTasks() {
     try {
       setIsLoading(true);
       
-      if (isOnline) {
-        // Fetch from server
-        const serverTasks = await tasksApi.getTasks(filters);
-        setTasks(serverTasks);
-        
-        // Update local cache
-        await taskStorage.clearAll();
-        for (const task of serverTasks) {
-          await taskStorage.addTask(task);
+      // Check if backend is available
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const isBackendAvailable = apiUrl && apiUrl !== 'http://localhost:5000/api';
+      
+      if (isOnline && isBackendAvailable) {
+        try {
+          // Try to fetch from server
+          const serverTasks = await tasksApi.getTasks(filters);
+          setTasks(serverTasks);
+          
+          // Update local cache
+          await taskStorage.clearAll();
+          for (const task of serverTasks) {
+            await taskStorage.addTask(task);
+          }
+        } catch (err) {
+          console.warn('Backend not available, using local storage:', err);
+          // Fallback to local storage
+          const localTasks = await taskStorage.getAllTasks();
+          setTasks(localTasks);
         }
       } else {
-        // Fetch from local storage when offline
+        // Fetch from local storage when offline or backend not available
         const localTasks = await taskStorage.getAllTasks();
         setTasks(localTasks);
       }
@@ -148,29 +168,43 @@ export function useTasks() {
 
   const createTask = async (taskData: Partial<Task>) => {
     try {
-      if (isOnline) {
-        const newTask = await tasksApi.createTask(taskData);
-        await taskStorage.addTask(newTask);
-        setTasks((prev) => [...prev, newTask]);
-        toast.success('Task created successfully');
-      } else {
-        // Create locally when offline
-        const now = new Date().toISOString();
-        const newTask: Task = {
-          id: crypto.randomUUID(),
-          title: taskData.title || 'Untitled Task',
-          description: taskData.description || '',
-          priority: taskData.priority || Priority.MEDIUM,
-          status: taskData.status || TaskStatus.TODO,
-          type: taskData.type || 'reminder',
-          dueDate: taskData.dueDate || now,
-          createdAt: now,
-          updatedAt: now,
-          userId: 'offline-user',
-        };
+      // Check if backend is available
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const isBackendAvailable = apiUrl && apiUrl !== 'http://localhost:5000/api';
+      
+      if (isOnline && isBackendAvailable) {
+        try {
+          const newTask = await tasksApi.createTask(taskData);
+          await taskStorage.addTask(newTask);
+          setTasks((prev) => [...prev, newTask]);
+          toast.success('Task created successfully');
+          return;
+        } catch (err) {
+          console.warn('Backend not available, saving locally:', err);
+        }
+      }
+      
+      // Create locally when offline or backend not available
+      const now = new Date().toISOString();
+      const newTask: Task = {
+        id: crypto.randomUUID(),
+        title: taskData.title || 'Untitled Task',
+        description: taskData.description || '',
+        priority: taskData.priority || Priority.MEDIUM,
+        status: taskData.status || TaskStatus.TODO,
+        type: taskData.type || 'reminder',
+        dueDate: taskData.dueDate || now,
+        createdAt: now,
+        updatedAt: now,
+        userId: 'local-user',
+      };
 
-        await taskStorage.addTask(newTask);
-        setTasks((prev) => [...prev, newTask]);
+      await taskStorage.addTask(newTask);
+      setTasks((prev) => [...prev, newTask]);
+      
+      if (!isBackendAvailable) {
+        toast.success('Task saved locally (Demo mode)');
+      } else {
         toast.success('Task saved locally - will sync when online');
       }
     } catch (err) {
@@ -182,24 +216,38 @@ export function useTasks() {
 
   const updateTask = async (id: string, updates: Partial<Task>) => {
     try {
-      if (isOnline) {
-        const updatedTask = await tasksApi.updateTask(id, updates);
-        await taskStorage.updateTask(updatedTask);
-        setTasks((prev) => prev.map((t) => (t.id === id ? updatedTask : t)));
-        toast.success('Task updated successfully');
+      // Check if backend is available
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const isBackendAvailable = apiUrl && apiUrl !== 'http://localhost:5000/api';
+      
+      if (isOnline && isBackendAvailable) {
+        try {
+          const updatedTask = await tasksApi.updateTask(id, updates);
+          await taskStorage.updateTask(updatedTask);
+          setTasks((prev) => prev.map((t) => (t.id === id ? updatedTask : t)));
+          toast.success('Task updated successfully');
+          return;
+        } catch (err) {
+          console.warn('Backend not available, updating locally:', err);
+        }
+      }
+      
+      // Update locally when offline or backend not available
+      const existingTask = tasks.find((t) => t.id === id);
+      if (!existingTask) throw new Error('Task not found');
+
+      const updatedTask: Task = {
+        ...existingTask,
+        ...updates,
+        updatedAt: new Date().toISOString(),
+      };
+
+      await taskStorage.updateTask(updatedTask);
+      setTasks((prev) => prev.map((t) => (t.id === id ? updatedTask : t)));
+      
+      if (!isBackendAvailable) {
+        toast.success('Task updated locally (Demo mode)');
       } else {
-        // Update locally when offline
-        const existingTask = tasks.find((t) => t.id === id);
-        if (!existingTask) throw new Error('Task not found');
-
-        const updatedTask: Task = {
-          ...existingTask,
-          ...updates,
-          updatedAt: new Date().toISOString(),
-        };
-
-        await taskStorage.updateTask(updatedTask);
-        setTasks((prev) => prev.map((t) => (t.id === id ? updatedTask : t)));
         toast.success('Task updated locally - will sync when online');
       }
     } catch (err) {
@@ -211,15 +259,29 @@ export function useTasks() {
 
   const deleteTask = async (id: string) => {
     try {
-      if (isOnline) {
-        await tasksApi.deleteTask(id);
-        await taskStorage.deleteTask(id);
-        setTasks((prev) => prev.filter((t) => t.id !== id));
-        toast.success('Task deleted successfully');
+      // Check if backend is available
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const isBackendAvailable = apiUrl && apiUrl !== 'http://localhost:5000/api';
+      
+      if (isOnline && isBackendAvailable) {
+        try {
+          await tasksApi.deleteTask(id);
+          await taskStorage.deleteTask(id);
+          setTasks((prev) => prev.filter((t) => t.id !== id));
+          toast.success('Task deleted successfully');
+          return;
+        } catch (err) {
+          console.warn('Backend not available, deleting locally:', err);
+        }
+      }
+      
+      // Delete locally when offline or backend not available
+      await taskStorage.deleteTask(id);
+      setTasks((prev) => prev.filter((t) => t.id !== id));
+      
+      if (!isBackendAvailable) {
+        toast.success('Task deleted locally (Demo mode)');
       } else {
-        // Delete locally when offline
-        await taskStorage.deleteTask(id);
-        setTasks((prev) => prev.filter((t) => t.id !== id));
         toast.success('Task deleted locally - will sync when online');
       }
     } catch (err) {
