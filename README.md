@@ -2,7 +2,7 @@
 
 # 📋 Action Items Manager
 
-### A Modern Full-Stack Task Management Application
+### A Task Management Web Application
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
@@ -11,7 +11,7 @@
 [![MongoDB](https://img.shields.io/badge/mongodb-7.x-47A248.svg)](https://www.mongodb.com/)
 [![Express](https://img.shields.io/badge/express-4.x-000000.svg)](https://expressjs.com/)
 
-**A fully functional task management web application for managing reminders, emails, calendar invites, and general tasks with priority levels, due dates, and offline support.**
+**A task management web application for managing reminders, emails, calendar invites, and general tasks with priority levels, due dates, and offline support.**
 
 [Features](#-features) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [API](#-api-documentation) • [Contributing](#-contributing)
 
