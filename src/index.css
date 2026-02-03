@@ -1,0 +1,203 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap");
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+==========================================================================
+【AI HANDOVER NOTE】
+1. DESIGN PHILOSOPHY:
+   - The 'Kinetic Productivity' system: Designed for the 2026 Action Items Manager, this aesthetic blends Neo-minimalism with 'Physicality'—using subtle rim-lights and ambient occlusion to make digital tasks feel tangible.
+   - Surfaces utilize a 'Context-First' hierarchy where active tasks are elevated through micro-shadows and localized glow (Physicality), while background elements remain flat and muted to reduce cognitive load.
+   - Glassmorphism 2.0 is applied specifically to sidebars and overlays to maintain spatial awareness of the underlying dashboard data.
+
+2. TYPOGRAPHY:
+   - Plus Jakarta Sans was chosen for its geometric clarity and modern professional 'snap,' ensuring high legibility for task lists and calendar invites.
+   - JetBrains Mono is utilized for metadata, timestamps, and priority indicators to give a precise, technical feel to the 'Action Items' logic.
+
+3. COLOR SYSTEM:
+   - Brand Identity: 'Action Indigo' (H: 262) serves as the primary driver, symbolizing focus and intelligence. 
+   - Mapping: --brand (Indigo) maps to --primary for core actions, while --accent uses a complementary soft violet to highlight secondary focus areas.
+   - Semantic Logic: Success (Emerald) for completed tasks, Warning (Amber) for approaching deadlines, and Destructive (Deep Rose) for overdue items, all balanced via OKLCH for uniform perceptual brightness.
+
+4. USAGE GUIDE:
+   - Layout: Designed for a 12-column grid with a fixed 'Glass' sidebar. Use 'max-w-7xl' for the main content container to maintain readability.
+   - Special Effects: Apply 'backdrop-blur-md' to the sidebar and 'ring-1 ring-white/10' (inner border) to cards to simulate the 2026 rim-light effect.
+   - Offline State: When IndexedDB sync is active, use a subtle pulsating animation on the --ring color in the header.
+==========================================================================
+*/
+
+:root {
+  /* Typography */
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  
+  /* Radius */
+  --radius: 0.75rem;
+
+  /* Core UI Tokens */
+  --background: oklch(0.98 0.005 262);
+  --foreground: oklch(0.21 0.03 262);
+  --card: oklch(1.0 0 0);
+  --card-foreground: oklch(0.21 0.03 262);
+  --popover: oklch(1.0 0 0);
+  --popover-foreground: oklch(0.21 0.03 262);
+  --primary: oklch(0.51 0.18 262);
+  --primary-foreground: oklch(0.98 0.01 262);
+  --secondary: oklch(0.94 0.015 262);
+  --secondary-foreground: oklch(0.27 0.05 262);
+  --muted: oklch(0.96 0.01 262);
+  --muted-foreground: oklch(0.52 0.03 262);
+  --accent: oklch(0.94 0.02 262);
+  --accent-foreground: oklch(0.27 0.05 262);
+  --destructive: oklch(0.60 0.18 25);
+  --destructive-foreground: oklch(0.98 0.01 25);
+  --border: oklch(0.91 0.01 262);
+  --input: oklch(0.91 0.01 262);
+  --ring: oklch(0.51 0.18 262);
+  
+  /* Chart Tokens */
+  --chart-1: oklch(0.51 0.18 262);
+  --chart-2: oklch(0.62 0.17 155);
+  --chart-3: oklch(0.74 0.16 45);
+  --chart-4: oklch(0.48 0.15 210);
+  --chart-5: oklch(0.65 0.12 330);
+  
+  /* Sidebar Tokens */
+  --sidebar: oklch(0.98 0.005 262);
+  --sidebar-foreground: oklch(0.35 0.04 262);
+  --sidebar-primary: oklch(0.51 0.18 262);
+  --sidebar-primary-foreground: oklch(0.98 0.01 262);
+  --sidebar-accent: oklch(0.94 0.02 262);
+  --sidebar-accent-foreground: oklch(0.21 0.03 262);
+  --sidebar-border: oklch(0.93 0.01 262);
+  --sidebar-ring: oklch(0.51 0.18 262);
+}
+
+.dark {
+  --background: oklch(0.14 0.02 262);
+  --foreground: oklch(0.92 0.01 262);
+  --card: oklch(0.18 0.02 262);
+  --card-foreground: oklch(0.92 0.01 262);
+  --popover: oklch(0.14 0.02 262);
+  --popover-foreground: oklch(0.92 0.01 262);
+  --primary: oklch(0.62 0.16 262);
+  --primary-foreground: oklch(0.14 0.02 262);
+  --secondary: oklch(0.22 0.03 262);
+  --secondary-foreground: oklch(0.92 0.01 262);
+  --muted: oklch(0.22 0.03 262);
+  --muted-foreground: oklch(0.65 0.03 262);
+  --accent: oklch(0.25 0.04 262);
+  --accent-foreground: oklch(0.92 0.01 262);
+  --destructive: oklch(0.55 0.18 25);
+  --destructive-foreground: oklch(0.98 0.01 25);
+  --border: oklch(0.28 0.03 262);
+  --input: oklch(0.28 0.03 262);
+  --ring: oklch(0.62 0.16 262);
+  
+  /* Chart Tokens */
+  --chart-1: oklch(0.62 0.16 262);
+  --chart-2: oklch(0.68 0.15 155);
+  --chart-3: oklch(0.78 0.14 45);
+  --chart-4: oklch(0.55 0.14 210);
+  --chart-5: oklch(0.72 0.11 330);
+  
+  /* Sidebar Tokens */
+  --sidebar: oklch(0.16 0.02 262);
+  --sidebar-foreground: oklch(0.85 0.02 262);
+  --sidebar-primary: oklch(0.62 0.16 262);
+  --sidebar-primary-foreground: oklch(0.14 0.02 262);
+  --sidebar-accent: oklch(0.22 0.03 262);
+  --sidebar-accent-foreground: oklch(0.92 0.01 262);
+  --sidebar-border: oklch(0.25 0.03 262);
+  --sidebar-ring: oklch(0.62 0.16 262);
+}
+
+@theme inline {
+  /* Shadcn Core Mapping */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Charts Mapping */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* Sidebar Mapping */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Typography */
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  /* Radius */
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    @apply scroll-smooth antialiased;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans min-h-screen;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+
+  code, pre {
+    @apply font-mono;
+  }
+
+  ::selection {
+    @apply bg-primary/20 text-primary;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/40;
+  }
+}
